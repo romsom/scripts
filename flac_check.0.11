@@ -1,0 +1,22 @@
+#!/bin/bash
+OLDIFS=$IFS
+IFS="
+"
+flacs=`find . -name "*\.flac" | sort`
+
+
+touch flac_check.log
+for flac in ${flacs[@]}; do
+	echo "$flac"
+	echo "$flac" >> flac_check.log
+	
+	if flac -t "$flac" 2>/dev/null ; then
+		echo "	-> OK."
+		echo "	-> OK." >> flac_check.log
+	else
+		echo "	-> FAIL!"
+		echo "	-> FAIL!" >> flac_check.log
+	fi
+done
+
+IFS=$OLDIFS

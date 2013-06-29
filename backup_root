@@ -1,0 +1,41 @@
+#!/bin/bash
+# full system backup
+
+# $1 hostname
+# $2 sourcedir
+
+# Backup destination
+backdest=/home/romsom/bak
+
+# Labels for backup name
+#PC=${HOSTNAME}
+pc=$1
+distro=arch
+type=full
+date=$(date "+%F")
+backupfile="$backdest/$1_$distro-$type-$date.tar.bz2"
+
+# Exclude file location
+prog=${0##*/} # Program name from filename
+#excdir="/home/<user>/.bin/root/backup"
+#exclude_file="$excdir/$prog-exc.txt"
+exclude_file="$2/etc/wpa_supplicant.conf.new"
+
+echo -n "Are you ready to backup? (y/n): "
+read executeback
+
+
+
+# Check if exclude file exists
+if [ ! -f $exclude_file ]; then
+  echo -n "No exclude file exists, continue? (y/n): "
+  read continue
+  if [ $continue == "n" ]; then exit; fi
+fi
+
+if [ $executeback = "y" ]; then
+  tar --exclude-from=$exclude_file -cjpf $backupfile $2
+  chown romsom $backupfile
+fi
+exit
+
