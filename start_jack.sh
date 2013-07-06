@@ -20,3 +20,5 @@ else
 fi
 
 jack_control start
+sleep 1
+aj2midid -e &
