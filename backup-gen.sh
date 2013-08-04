@@ -26,11 +26,19 @@ echo "Sichere Systemkonfiguration ..."
 
 mkdir $NAME/config
 
-pacman -Qii | awk '/^MODIFIED/ {print $2}' >> $NAME/config/configlist
+pacman -Qii | awk '/^MODIFIED/ {print $2}' | grep -v "shadow" >> $NAME/config/configlist
 rsync -R $(cat $NAME/config/configlist) $NAME/config/
-
+cp -r /etc/skel $DATE/config/etc/
 
 echo "Komprimiere Daten ..."
+
+# lange her, hat nicht funktioniert, bleibt als reminder
+#echo "Erstelle Wiederherstellungsskript ..."
+#cat /dev/null >> $NAME/restore.sh
+#echo '#!/bin/sh' > $NAME/restore.sh
+#echo 'pacman -S $(cat pkg/pkglist)' > $NAME/restore.sh
+#echo 'cp --recursive /config/* /' > $NAME/restore.sh
+#chmod a+x $NAME/restore.sh
 
 tar -cJf $NAME.tar.xz $NAME/*
 rm -r $NAME/
