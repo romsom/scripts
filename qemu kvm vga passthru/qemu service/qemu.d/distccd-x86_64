@@ -1,0 +1,14 @@
+type="system-x86_64"
+args="-enable-kvm -M q35 -m 16384 -cpu host -smp 24,sockets=1,cores=24,threads=1 \
+-net nic,macaddr=52:54:19:5e:f8:e2 -net user \
+-vga std -vnc :0 \
+-drive file=/media/data/qemu_distccd-x86_64_new.img,if=virtio \
+-drive file=/media/data/archlinux-2014.09.03-dual.iso,if=virtio \
+-boot menu=on \
+-monitor telnet:localhost:8002,server,nowait,nodelay \
+-usbdevice tablet \
+-redir tcp:8003::8003 \
+-runas kvm"
+
+haltcmd="echo 'system_powerdown' | ncat localhost 8002"
+#haltcmd="echo 'q' | ncat localhost 8002"
