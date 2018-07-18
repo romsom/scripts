@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import dbus
 from functools import reduce
+import re
 
 # use dbus-send --session --print-reply --dest=org.jackaudio.service /org/jackaudio/... <interface> [Parameters]
 # -> tab completion is your friend (except for parameters)
@@ -63,6 +64,7 @@ class JackClient():
         self.id = dbus_data[0]
         self.name = dbus_data[1]
         self.ports = [JackPort(self.name, d[1], self.id, d[0], d[3], d[2]) for d in dbus_data[2]]
+        self.pid = jack_patchbay.GetClientPID(self.id)
     def lookupPort(self, clientID, portID):
         for p in self.ports:
             if p.isID(clientID, portID):
@@ -73,14 +75,19 @@ class JackClient():
             if p.isPort(client, port):
                 return port
         return None
+    def getPortsByName(self, port):
+        """get all matching ports"""
+        r = re.compile(port)
+        return [p for p in self.ports if r.match(p.name)]
+    
     def __str__(self):
         return "{}: {}\n\t{}".format(self.name, self.id, self.ports)
+    def __repr__(self):
+        return "{} [{}]".format(self.name, self.pid)
 class JackGraph():
     def __init__(self, dbus_data):
         self.version = dbus_data[0]
         self.clients = [JackClient(d) for d in dbus_data[1]]
-        for c in self.clients:
-            print(c)
         self.connections = [JackConnection(d, self.clients) for d in dbus_data[2]]
     def lookupPort(self, clientID, portID):
         return self.clients.lookupPort(clientID, portID)
@@ -88,7 +95,23 @@ class JackGraph():
         return self.clients.lookupPortByName(client, port)
     def ports(self):
         return reduce(lambda a,b: a+b, [c.ports for c in self.clients], [])
-    
+
+def getGraph():
+    return JackGraph(jack_patchbay.GetGraph(0))
+
+def getClients():
+    graph = JackGraph(jack_patchbay.GetGraph(0))
+    return graph.clients
+
+def getClientsByPID(pid):
+    cs = getClients()
+    return [c for c in cs if c.pid == pid]
+
+def getClientsByName(name):
+    cs = getClients()
+    r = re.compile(name)
+    return [c for c in cs if r.match(c.portID)]
+
 def getPorts():
     graph = JackGraph(jack_patchbay.GetGraph(0))
     return graph.ports()
