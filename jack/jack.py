@@ -15,8 +15,8 @@ jack_patchbay = dbus.Interface(jack_controller, 'org.jackaudio.JackPatchbay')
 class JackPort():
     def __init__(self, client, port, clientID, portID, ptype, flags):
         # TODO? ids
-        #if isinstance(client, dbus.String):
-        #    self.client = client.
+        # if isinstance(client, dbus.String):
+        #     self.client = client.
         self.client = client
         self.port = port
         self.portID = portID
@@ -68,7 +68,7 @@ class JackClient():
     def lookupPort(self, clientID, portID):
         for p in self.ports:
             if p.isID(clientID, portID):
-                return port
+                return p
         return None
     def lookupPortByName(self, client, port):
         for p in self.ports:
@@ -94,7 +94,7 @@ class JackGraph():
     def lookupPortByName(self, client, port):
         return self.clients.lookupPortByName(client, port)
     def ports(self):
-        return reduce(lambda a,b: a+b, [c.ports for c in self.clients], [])
+        return reduce(lambda a, b: a + b, [c.ports for c in self.clients], [])
 
 def getGraph():
     return JackGraph(jack_patchbay.GetGraph(0))
