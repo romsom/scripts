@@ -11,7 +11,6 @@ def usage():
     print('{}: split audio file using ffmpeg and track information like usually used in Youtube comments.\n'.format(sys.argv[0]), file=sys.stderr)
     print('Usage: {} <input file>'.format(sys.argv[0]), file=sys.stderr)
     print('Provide track information via a .txt file that has the same name as the source file except the extension.', file=sys.stderr)
-    print('E.g., copy and paste in terminal (usually Ctrl-Shift-v) and then press Ctrl-d.', file=sys.stderr)
 
 def format_num(num: str) -> str:
     num_val = int(num)
