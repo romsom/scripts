@@ -38,7 +38,7 @@ mkdir "$NAME/config"
 pacman -Qii | awk '/^MODIFIED/ {print $2}' | grep -v "shadow" >> "$NAME/config/configlist"
 
 # generate rsync commandline, $NAME/config/ is the target directory
-echo "$NAME/config/" | cat "$NAME/config/configlist" - | xargs -d '\n' rsync -R
+echo "$NAME/config/" | cat "$NAME/config/configlist" - | xargs -d '\n' rsync -aR
 
 if [ -d /etc/skel ]; then
 cp -r /etc/skel "$NAME/config/etc/"
