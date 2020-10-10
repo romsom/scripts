@@ -16,7 +16,7 @@ SHAFILE="$3"
 TEMP=$(mktemp -d)
 
 pushd "$ROOT" || exit 1
-find . -type f -print0 | tee >(parallel -0 sha256sum | sort -k2 > "$TEMP/sha256sums") | tar -C "$ROOT" -cf >(pv > "$TARGET") --null -T -
+find . -type f -print0 | tee >(parallel -0 sha256sum | sort -k2 > "$TEMP/sha256sums") | tar -cf >(pv > "$TARGET") --null -T -
 #find "$ROOT" -type f -print0 | tee >(parallel -0 sha256sum > "$TEMP/sha256sums") > "$TARGET.list"
 tar -C "$TEMP" -rf "$TARGET" sha256sums
 if [ "x${SHAFILE}" != "x" ]; then
