@@ -22,8 +22,11 @@ TEMP=$(mktemp -d)
 #[ "x$TEMP" != "x" ] && exit 1
 
 pushd "$ROOT" || exit 1
+echo "Adding files to archive ..."
 find "$@" -type f -print0 | tee >(parallel -0 sha256sum | sort -k2 > "$TEMP/sha256sums") | tar -cf >(pv -B "$BLOCKSIZE" > "$TARGET") --null -T -
 #find "$ROOT" -type f -print0 | tee >(parallel -0 sha256sum > "$TEMP/sha256sums") > "$TARGET.list"
+
+echo "Adding checksums to archive ..."
 tar -C "$TEMP" -b "$BLOCKSIZE" -rf "$TARGET" sha256sums
 head "$TEMP/sha256sums"
 if [ "x${SHAFILE}" != "x" ]; then
