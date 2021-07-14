@@ -23,12 +23,15 @@ shift
 
 TEMP=$(mktemp -d)
 #[ "x$TEMP" != "x" ] && exit 1
+TF_FIFO="$TEMP/tape-finished.fifo"
+mkfifo "$TF_FIFO"
 
 pushd "$ROOT" || exit 1
 echo "Adding files to archive ..."
-find "$@" -type f -print0 | tee >(parallel -0 sha256sum | sort -k2 > "$TEMP/sha256sums") | tar -cf >(pv -B "$BLOCKSIZE" > "$TARGET") --null -T -
+find "$@" -type f -print0 | tee >(parallel -0 sha256sum | sort -k2 > "$TEMP/sha256sums") | tar -cf >(pv -B "$BLOCKSIZE" > "$TARGET"; : > "$TF_FIFO") --null -T -
 #find "$ROOT" -type f -print0 | tee >(parallel -0 sha256sum > "$TEMP/sha256sums") > "$TARGET.list"
 
+read < "$TF_FIFO"
 echo "Adding checksums to archive ..."
 tar -C "$TEMP" -b "$BLOCKING_FACTOR" -rf "$TARGET" sha256sums
 head "$TEMP/sha256sums"
