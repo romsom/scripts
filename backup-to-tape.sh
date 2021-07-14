@@ -36,6 +36,7 @@ echo "Waiting for tape drive to finish ..."
 read < "$TF_FIFO"
 echo "Waiting for checksum calculations to finish ..."
 read < "$CF_FIFO"
+sleep 5
 echo "Adding checksums to archive ..."
 tar -C "$TEMP" -b ${BLOCKING_FACTOR} -rf "$TARGET" sha256sums
 head "$TEMP/sha256sums"
