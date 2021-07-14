@@ -10,8 +10,8 @@
 #  - pv
 
 # BLOCKSIZE must be 512 * BLOCKING_FACTOR
-BLOCKING_FACTOR=1000
-BLOCKSIZE=512000
+BLOCKING_FACTOR="1000"
+BLOCKSIZE="512000"
 
 ROOT="$1"
 shift
@@ -28,12 +28,12 @@ mkfifo "$TF_FIFO"
 
 pushd "$ROOT" || exit 1
 echo "Adding files to archive ..."
-find "$@" -type f -print0 | tee >(parallel -0 sha256sum | sort -k2 > "$TEMP/sha256sums") | tar -cf >(pv -B "$BLOCKSIZE" > "$TARGET"; : > "$TF_FIFO") --null -T -
+find "$@" -type f -print0 | tee >(parallel -0 sha256sum | sort -k2 > "$TEMP/sha256sums") | tar -cf >(pv -B ${BLOCKSIZE} > "$TARGET"; : > "$TF_FIFO") --null -T -
 #find "$ROOT" -type f -print0 | tee >(parallel -0 sha256sum > "$TEMP/sha256sums") > "$TARGET.list"
 
 read < "$TF_FIFO"
 echo "Adding checksums to archive ..."
-tar -C "$TEMP" -b "$BLOCKING_FACTOR" -rf "$TARGET" sha256sums
+tar -C "$TEMP" -b ${BLOCKING_FACTOR} -rf "$TARGET" sha256sums
 head "$TEMP/sha256sums"
 if [ "x${SHAFILE}" != "x" ]; then
 	cp "$TEMP/sha256sums" "$SHAFILE"
