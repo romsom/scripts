@@ -1,4 +1,4 @@
-#!/bin/zsh
+#!/bin/bash
 
 # Idea:
 #  - add files to a tar ball
@@ -10,15 +10,21 @@
 #  - pv
 
 ROOT="$1"
-TARGET="$2"
-SHAFILE="$3"
+shift
+TARGET="$1"
+shift
+SHAFILE="$1"
+shift
+# remaining parameters are arguments to find
 
 TEMP=$(mktemp -d)
+#[ "x$TEMP" != "x" ] && exit 1
 
 pushd "$ROOT" || exit 1
-find . -type f -print0 | tee >(parallel -0 sha256sum | sort -k2 > "$TEMP/sha256sums") | tar -cf >(pv > "$TARGET") --null -T -
+find "$@" -type f -print0 | tee >(parallel -0 sha256sum | sort -k2 > "$TEMP/sha256sums") | tar -cf >(pv > "$TARGET") --null -T -
 #find "$ROOT" -type f -print0 | tee >(parallel -0 sha256sum > "$TEMP/sha256sums") > "$TARGET.list"
 tar -C "$TEMP" -rf "$TARGET" sha256sums
+head "$TEMP/sha256sums"
 if [ "x${SHAFILE}" != "x" ]; then
 	cp "$TEMP/sha256sums" "$SHAFILE"
 fi
