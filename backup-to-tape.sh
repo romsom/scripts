@@ -13,7 +13,6 @@
 # BLOCKSIZE must be 512 * BLOCKING_FACTOR
 BLOCKING_FACTOR="1000"
 BLOCKSIZE="512000"
-N_PROCS="8"
 
 ROOT="$1"
 shift
@@ -30,9 +29,9 @@ mkfifo "$TF_FIFO"
 
 pushd "$ROOT" || exit 1
 echo "Adding files to archive ..."
-find "$@" -type f -print0 | tee >(ionice -c2 -n7 parallel -0 -p ${N_PROCS} sha256sum | sort -k2 > "$TEMP/sha256sums") | tar -cf >(pv -B ${BLOCKSIZE} > "$TARGET"; : > "$TF_FIFO") --null -T -
+find "$@" -type f -print0 | tee >(ionice -c2 -n7 parallel -0 sha256sum | sort -k2 > "$TEMP/sha256sums") | ionice -c2 -n4 tar -cf >(ionice -c2 -n4 pv -B ${BLOCKSIZE} > "$TARGET"; : > "$TF_FIFO") --null -T -
 #find "$ROOT" -type f -print0 | tee >(parallel -0 sha256sum > "$TEMP/sha256sums") > "$TARGET.list"
-
+echo "Waiting for tape drive to finish ..."
 read < "$TF_FIFO"
 echo "Adding checksums to archive ..."
 tar -C "$TEMP" -b ${BLOCKING_FACTOR} -rf "$TARGET" sha256sums
