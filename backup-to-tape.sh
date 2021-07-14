@@ -25,14 +25,17 @@ shift
 TEMP=$(mktemp -d)
 #[ "x$TEMP" != "x" ] && exit 1
 TF_FIFO="$TEMP/tape-finished.fifo"
+CF_FIFO="$TEMP/checksums-finished.fifo"
 mkfifo "$TF_FIFO"
 
 pushd "$ROOT" || exit 1
 echo "Adding files to archive ..."
-find "$@" -type f -print0 | tee >(ionice -c2 -n7 parallel -0 sha256sum | sort -k2 > "$TEMP/sha256sums") | ionice -c2 -n4 tar -cf >(ionice -c2 -n4 pv -B ${BLOCKSIZE} > "$TARGET"; : > "$TF_FIFO") --null -T -
+find "$@" -type f -print0 | tee >(ionice -c2 -n7 parallel -0 sha256sum | sort -k2 > "$TEMP/sha256sums"; : > "$CF_FIFO") | ionice -c2 -n4 tar -cf >(ionice -c2 -n4 pv -B ${BLOCKSIZE} > "$TARGET"; : > "$TF_FIFO") --null -T -
 #find "$ROOT" -type f -print0 | tee >(parallel -0 sha256sum > "$TEMP/sha256sums") > "$TARGET.list"
 echo "Waiting for tape drive to finish ..."
 read < "$TF_FIFO"
+echo "Waiting for checksum calculations to finish ..."
+read < "$CF_FIFO"
 echo "Adding checksums to archive ..."
 tar -C "$TEMP" -b ${BLOCKING_FACTOR} -rf "$TARGET" sha256sums
 head "$TEMP/sha256sums"
