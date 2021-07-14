@@ -8,6 +8,9 @@
 #  - mktemp
 #  - GNU parallel
 #  - pv
+
+# BLOCKSIZE must be 512 * BLOCKING_FACTOR
+BLOCKING_FACTOR=20
 BLOCKSIZE=10240
 
 ROOT="$1"
@@ -27,7 +30,7 @@ find "$@" -type f -print0 | tee >(parallel -0 sha256sum | sort -k2 > "$TEMP/sha2
 #find "$ROOT" -type f -print0 | tee >(parallel -0 sha256sum > "$TEMP/sha256sums") > "$TARGET.list"
 
 echo "Adding checksums to archive ..."
-tar -C "$TEMP" -b "$BLOCKSIZE" -rf "$TARGET" sha256sums
+tar -C "$TEMP" -b "$BLOCKING_FACTOR" -rf "$TARGET" sha256sums
 head "$TEMP/sha256sums"
 if [ "x${SHAFILE}" != "x" ]; then
 	cp "$TEMP/sha256sums" "$SHAFILE"
